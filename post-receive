@@ -1,0 +1,59 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+gem 'tinder'
+require 'tinder'
+ 
+# 
+# This script runs as a git post-receive hook.
+# Don't forget to make it executable
+
+# Configuration
+repository = 'your_project_name'
+commit_url = "http://link_to_your_scm/projects/#{repository}/repository/revisions/"
+campfire_url = 'campfire_url'
+campfire_login = 'email@email.com'
+campfire_password = 'password'
+campfire_room = 'room'
+# Todo: safe config in YML
+
+campfire = Tinder::Campfire.new campfire_url
+campfire.login campfire_login, campfire_password
+room = campfire.find_room_by_name(campfire_room)
+
+
+# You don't need to change anything below here
+# =====================================================================
+ 
+GIT = `which git`.strip
+
+# Touch a file in the repository containing a timestamp of the
+# last commit already posted to the room.
+filename = File.join(File.dirname(__FILE__), repository[/[\w.]+/] + ".log")
+if File.exist?(filename)
+  last_revision = Time.parse File.open(filename) { |f| f.read.strip }
+else
+  room.speak "Debug: Couldn't find previous revision file. Don’t worry if it’s your first push."
+  last_revision = Time.now - 120
+end
+revtime = last_revision.strftime("%a %b %d %H:%M:%S %Y %Z")
+text = `#{GIT} log --all --since='#{revtime}'`
+File.open(filename, "w+") { |f| f.write Time.now.utc }
+lines = text.split("\n\ncommit ")
+room.speak "Repository #{repository} has been pushed with the following commits:"
+
+lines.each do |line|
+  revision = line[/([a-f0-9]{40})/]
+  commit_author  = `#{GIT} show --pretty=format:"%an" #{revision} | sed q`.chomp
+  commit_log     = `#{GIT} show --pretty=format:"%s" #{revision}  | sed q`.chomp
+  commit_date    = `#{GIT} show --pretty=format:"%aD" #{revision} | sed q`.chomp
+  commit_changed = `#{GIT}-diff-tree --name-status #{revision}    | sed -n '$p'`
+ 
+  commit_changes = commit_changed.split("\n").inject([]) do |memo, line| 
+    if line.strip =~ /(\w)\s+(.*)/
+      memo << [$1, $2]
+    end
+  end.to_yaml
+ 
+  url_changeset = commit_url + revision
+  room.speak "#{commit_author} commited “#{commit_log}”. #{url_changeset}" 
+end
