@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+#
+# An example hook script that is called after commit messages
+# have been spoken on Campfire.
+#
+# To enable this hook, rename this file to "post-speak" 
+# and give it execution rights.
+#
+# This can typically run a batch of tests, or any task
+# that could be called by a git's post-receive hook.

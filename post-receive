@@ -1,16 +1,20 @@
 #!/usr/bin/env ruby
+
+# Git post-receive hook for Campfire v0.3
+# Don’t forget to make it executable and to configure config.yml for your repository
+
 require 'rubygems'
 gem     'tinder'
 require 'tinder'
- 
-# Git post-receive hook for Campfire v0.2
-# Don’t forget to make it executable and to configure config.yml for your repository
 
 config = YAML::load(File.open(File.join(File.dirname(__FILE__), 'config.yml')))
 campfire = Tinder::Campfire.new(config['campfire_url'])
 campfire.login(config['campfire_login'], config['campfire_password'])
 room = campfire.find_room_by_name(config['campfire_room'])
 GIT = `which git`.strip
+
+# Call to pre-speak hook
+load File.join(File.dirname(__FILE__), 'pre-speak') if File.exist?(File.join(File.dirname(__FILE__), 'pre-speak'))
 
 # Write in a file the timestamp of the last commit already posted to the room.
 filename = File.join(File.dirname(__FILE__), config['repository'][/[\w.]+/] + ".log")
@@ -25,20 +29,23 @@ revtime = last_revision.strftime("%a %b %d %H:%M:%S %Y %Z")
 text = `#{GIT} log --all --since='#{revtime}'`
 File.open(filename, "w+") { |f| f.write Time.now.utc }
 lines = text.split("\n\ncommit ")
-room.speak "Repository #{config[:repository]} has been pushed with the following commits:"
 
-lines.each do |line|
-  revision       = line[/([a-f0-9]{40})/]
-  commit_author  = `#{GIT} show --pretty=format:"%an" #{revision} | sed q`.chomp
-  commit_log     = `#{GIT} show --pretty=format:"%s" #{revision}  | sed q`.chomp
-  commit_date    = `#{GIT} show --pretty=format:"%aD" #{revision} | sed q`.chomp
-  commit_changed = `#{GIT}-diff-tree --name-status #{revision}    | sed -n '$p'`
- 
-  commit_changes = commit_changed.split("\n").inject([]) do |memo, line| 
-    if line.strip =~ /(\w)\s+(.*)/
-      memo << [$1, $2]
-    end
-  end.to_yaml
- 
-  room.speak "#{commit_author} commited “#{commit_log}”. #{config['commit_url'] + revision}" 
+if lines.any?
+  room.speak "Repository #{config[:repository]} has been pushed with the following commits:"
+  lines.each do |line|
+    revision       = line[/([a-f0-9]{40})/]
+    commit_author  = `#{GIT} show --pretty=format:"%an" #{revision} | sed q`.chomp
+    commit_log     = `#{GIT} show --pretty=format:"%s" #{revision}  | sed q`.chomp
+    commit_date    = `#{GIT} show --pretty=format:"%aD" #{revision} | sed q`.chomp
+    commit_changed = `#{GIT}-diff-tree --name-status #{revision}    | sed -n '$p'`
+    commit_changes = commit_changed.split("\n").inject([]) do |memo, line| 
+      if line.strip =~ /(\w)\s+(.*)/
+        memo << [$1, $2]
+      end
+    end.to_yaml
+    room.speak "#{commit_author} commited “#{commit_log}”. #{config['commit_url'] + revision}" 
+  end
 end
+
+# Call to post-speak hook
+load File.join(File.dirname(__FILE__), 'post-speak') if File.exist?(File.join(File.dirname(__FILE__), 'post-speak'))
