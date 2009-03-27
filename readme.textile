@@ -1,0 +1,13 @@
+This is a post-receive hook for git to display commit messages to Campfire.
+
+http://www.nanalegumene.net/displaying-git-commits-on-campfire
+
+h2. Revisions
+
+*0.2 (March 27, 2009)*
+
+* Move Campfire configuration file to a separate .yml file
+
+*0.1 (March 23, 2009)*
+
+* Initial release

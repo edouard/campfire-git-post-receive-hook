@@ -1,0 +1,6 @@
+repository: repository_name                 # Used for the message `repository blah has been pushed with the following commits`
+commit_url: url_to_code_browser             # URL where you can see the changeset on webbased git browser (gitweb or trac or whatever)
+campfire_url: campfire_prefix               # Only the first part of the URL. Eg. `blah` for `blah.campfirenow.com`
+campfire_login: campfire_login
+campfire_password: campfire_password
+campfire_room: campfire_room
