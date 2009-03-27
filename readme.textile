@@ -1,8 +1,8 @@
 This is a post-receive hook for git to display commit messages to Campfire.
 
-The `hookify` script makes it easy to install or update your post-receive hooks. Just run:
+Use the `hookify` script to easily to install or upgrade the post-receive hooks on your repositories. Just run:
 
-`./hookify /path/to/repository`
+`./hookify /path/to/repository1 /path/to/repository2 ...`
 
 h2. Revisions
 
