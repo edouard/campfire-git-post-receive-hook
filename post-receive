@@ -31,7 +31,7 @@ File.open(filename, "w+") { |f| f.write Time.now.utc }
 lines = text.split("\n\ncommit ")
 
 if lines.any?
-  room.speak "Repository #{config[:repository]} has been pushed with the following commits:"
+  room.speak "Repository #{config['repository']} has been pushed with the following commits:"
   lines.each do |line|
     revision       = line[/([a-f0-9]{40})/]
     commit_author  = `#{GIT} show --pretty=format:"%an" #{revision} | sed q`.chomp
