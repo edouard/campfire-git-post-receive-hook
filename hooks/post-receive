@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-# Git post-receive hook for Campfire v0.3
+# Git post-receive hook for Campfire v0.3.1
 # Don’t forget to make it executable and to configure config.yml for your repository
 
 require 'rubygems'
@@ -26,7 +26,7 @@ else
 end
 
 revtime = last_revision.strftime("%a %b %d %H:%M:%S %Y %Z")
-text = `#{GIT} log --all --since='#{revtime}'`
+text = `#{GIT} log --all --since='#{revtime}' --reverse`
 File.open(filename, "w+") { |f| f.write Time.now.utc }
 lines = text.split("\n\ncommit ")
 
