@@ -3,6 +3,8 @@
 # Easily install or update your post-receive hooks
 # Usage: `hookify /path/to/repository1 /path/to/repository2 ...`
 
+require 'fileutils'
+
 unless ARGV.any?
   puts "Error: repository not specified"
   puts "Usage: ./hookify /path/to/repository"
@@ -10,6 +12,7 @@ unless ARGV.any?
 end
 
 ARGV.each do |repository_path|
+  repository_path = File.expand_path(repository_path)
   puts "Hookifying repository #{repository_path}..."
   if File.exist?(repository_path + '/.git')
     hook_directory = repository_path + '/.git/hooks' # working copy
@@ -17,9 +20,16 @@ ARGV.each do |repository_path|
     hook_directory = repository_path + '/hooks' # bare repository
   end
 
-  `cp #{File.join(File.dirname(__FILE__), '../hooks/*')} #{hook_directory}`
-  `chmod 775 #{hook_directory}/post-receive`
-  `chmod 775 #{hook_directory}/config.example.yml`
-  `chmod 775 #{hook_directory}/post-speak.example`
-  `chmod 775 #{hook_directory}/pre-speak.example`
+  hook_source = File.join(File.dirname(__FILE__), '../hooks')
+  file_names = nil
+  Dir.chdir(hook_source) do
+    puts "\nin #{Dir.pwd}:"
+    file_names = Dir['*']
+    FileUtils.cp file_names, hook_directory, :verbose => true
+  end
+  Dir.chdir(hook_directory) do
+    puts "\nin #{Dir.pwd}:"
+    FileUtils.chmod 0755, file_names, :verbose => true
+    FileUtils.chown nil, 'dev', file_names, :verbose => true
+  end
 end

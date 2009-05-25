@@ -2,6 +2,6 @@
 
 MAJOR = 0
 MINOR = 3
-TINY  = 1
+TINY  = 2
 
 puts "Campfire git post-receive hook v" << [MAJOR, MINOR, TINY].join('.')

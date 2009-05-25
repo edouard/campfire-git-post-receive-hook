@@ -6,6 +6,10 @@ The `hookify` script makes it easy to install or update your post-receive hooks.
 
 h2. Revisions
 
+*0.3.2 (May 26, 2009)*
+
+* Slight improvements on hookify script (Author: Étienne Barrié)
+
 *0.3.1 (April 6, 2009)*
 
 * Display git commits by chronological order.
